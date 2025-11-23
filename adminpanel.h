@@ -27,7 +27,7 @@
 #include <QColor>
 #include <QFont>
 #include "DatabaseManager.h"
-#include "SlipPrinter.h"
+#include "slipprinter.h"
 
 class AdminPanel : public QMainWindow
 {

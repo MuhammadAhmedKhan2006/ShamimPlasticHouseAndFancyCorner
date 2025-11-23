@@ -1,5 +1,15 @@
-#include "SlipPrinter.h"
+#include "slipprinter.h"
+#include "sale.h"
 #include <QPrintPreviewDialog>
+#include <QPrinter>
+#include <QPrintDialog>
+#include <QTextDocument>
+#include <QMessageBox>
+#include <QDateTime>
+#include <QPageSize>
+#include <QPageLayout>
+#include <QDialog>
+#include <QMarginsF>
 
 SlipPrinter::SlipPrinter(QObject *parent)
     : QObject(parent)

@@ -1,4 +1,4 @@
-#include "Sale.h"
+#include "sale.h"
 
 Sale::Sale()
     : m_id(0), m_total(0.0), m_salesmanId(1)
@@ -34,7 +34,8 @@ void Sale::clearItems()
 void Sale::recalculateTotal()
 {
     m_total = 0.0;
-    for (const SaleItem& item : m_items) {
+    const QList<SaleItem>& items = m_items;
+    for (const SaleItem& item : items) {
         m_total += item.totalPrice;
     }
 }

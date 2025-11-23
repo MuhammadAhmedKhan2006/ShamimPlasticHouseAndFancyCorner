@@ -26,8 +26,8 @@
 #include <QColor>
 #include <QFont>
 #include "DatabaseManager.h"
-#include "SlipPrinter.h"
-#include "Sale.h"
+#include "slipprinter.h"
+#include "sale.h"
 
 class SalesmanPanel : public QMainWindow
 {

@@ -1,17 +1,11 @@
 #ifndef SLIPPRINTER_H
 #define SLIPPRINTER_H
 
-#include <QPrintDialog>
-#include <QPrinter>
-#include <QPainter>
-#include <QTextDocument>
-#include <QTextCursor>
-#include <QTextCharFormat>
-#include <QTextBlockFormat>
-#include <QFont>
-#include <QDateTime>
-#include <QMessageBox>
-#include "Sale.h"
+#include <QObject>
+#include <QString>
+#include <QWidget>
+
+class Sale;
 
 class SlipPrinter : public QObject
 {
@@ -20,10 +14,8 @@ class SlipPrinter : public QObject
 public:
     explicit SlipPrinter(QObject *parent = nullptr);
 
-    // Print sales invoice
+    // Print methods
     void printSalesInvoice(const Sale& sale, QWidget *parentWidget = nullptr);
-
-    // Print payment slip for supplier
     void printPaymentSlip(const QString& supplierName, double totalPurchases,
                           double totalPayments, double balance, QWidget *parentWidget = nullptr);
 
@@ -33,8 +25,8 @@ public:
                             double totalPayments, double balance, QWidget *parentWidget = nullptr);
 
 private:
-    void printDocument(const QString& htmlContent, QWidget *parentWidget);
-    void previewDocument(const QString& htmlContent, QWidget *parentWidget);
+    void printDocument(const QString& htmlContent, QWidget *parentWidget = nullptr);
+    void previewDocument(const QString& htmlContent, QWidget *parentWidget = nullptr);
     QString generateSalesInvoiceHtml(const Sale& sale);
     QString generatePaymentSlipHtml(const QString& supplierName, double totalPurchases,
                                     double totalPayments, double balance);

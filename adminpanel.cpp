@@ -1,4 +1,7 @@
-#include "AdminPanel.h"
+// Copy this ENTIRE file and replace your adminpanel.cpp completely
+// This is the complete working version with all UI fixes
+
+#include "adminpanel.h"
 #include <QApplication>
 #include <QFileDialog>
 #include <QTextStream>
@@ -17,7 +20,6 @@ AdminPanel::AdminPanel(QWidget *parent)
     m_slipPrinter = new SlipPrinter(this);
     setupUI();
 
-    // Load initial data
     loadProducts();
     loadSuppliers();
     loadTransactions();
@@ -33,8 +35,32 @@ void AdminPanel::setupUI()
 {
     setCentralWidget(new QWidget);
     QVBoxLayout *mainLayout = new QVBoxLayout(centralWidget());
+    mainLayout->setSpacing(15);
+    mainLayout->setContentsMargins(15, 15, 15, 15);
 
-    // Create header with modern styling
+    QHBoxLayout *headerLayout = new QHBoxLayout;
+
+    QPushButton *backBtn = new QPushButton("← Back to Login");
+    backBtn->setStyleSheet(R"(
+        QPushButton {
+            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #95a5a6, stop: 1 #7f8c8d);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 25px;
+            font-size: 15px;
+            font-weight: bold;
+        }
+        QPushButton:hover {
+            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #7f8c8d, stop: 1 #5d6d7e);
+        }
+    )");
+    backBtn->setMaximumWidth(200);
+    backBtn->setMinimumHeight(50);
+    connect(backBtn, &QPushButton::clicked, this, &QMainWindow::close);
+
     QLabel *headerLabel = new QLabel("⚙️ ADMIN CONTROL PANEL");
     headerLabel->setStyleSheet(R"(
         QLabel {
@@ -45,11 +71,13 @@ void AdminPanel::setupUI()
             background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,
                                       stop: 0 #667eea, stop: 1 #764ba2);
             border-radius: 15px;
-            margin-bottom: 10px;
         }
     )");
     headerLabel->setAlignment(Qt::AlignCenter);
     headerLabel->setMinimumHeight(80);
+
+    headerLayout->addWidget(backBtn);
+    headerLayout->addWidget(headerLabel, 1);
 
     m_tabWidget = new QTabWidget;
     m_tabWidget->setTabPosition(QTabWidget::North);
@@ -91,17 +119,17 @@ void AdminPanel::setupUI()
     setupDailySalesTab();
     setupReportsTab();
 
-    mainLayout->addWidget(headerLabel);
+    mainLayout->addLayout(headerLayout);
     mainLayout->addWidget(m_tabWidget);
 
-    // Status bar with modern styling
     statusBar()->setStyleSheet(R"(
         QStatusBar {
             background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,
                                       stop: 0 #34495e, stop: 1 #2c3e50);
             color: white;
             font-weight: bold;
-            padding: 5px;
+            font-size: 13px;
+            padding: 8px;
         }
     )");
     statusBar()->showMessage("✅ Admin Panel Ready - All systems operational");
@@ -110,40 +138,27 @@ void AdminPanel::setupUI()
 void AdminPanel::setupProductTab()
 {
     m_productTab = new QWidget;
-
     QHBoxLayout *mainLayout = new QHBoxLayout(m_productTab);
     QSplitter *splitter = new QSplitter(Qt::Horizontal);
 
-    // Left side - Product list
     QWidget *leftWidget = new QWidget;
     QVBoxLayout *leftLayout = new QVBoxLayout(leftWidget);
 
-    // Search
     QHBoxLayout *searchLayout = new QHBoxLayout;
     m_productSearchEdit = new QLineEdit;
     m_productSearchEdit->setPlaceholderText("Search products...");
+    m_productSearchEdit->setStyleSheet("QLineEdit { border: 2px solid #bdc3c7; border-radius: 8px; padding: 10px; font-size: 14px; background: white; color: #2c3e50; }");
+
     QPushButton *searchBtn = new QPushButton("🔍 Search");
-    searchBtn->setStyleSheet(R"(
-        QPushButton {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #3498db, stop: 1 #2980b9);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #2980b9, stop: 1 #21618c);
-        }
-    )");
-    searchLayout->addWidget(new QLabel("Search:"));
+    searchBtn->setStyleSheet("QPushButton { background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1, stop: 0 #3498db, stop: 1 #2980b9); color: white; border: none; border-radius: 8px; padding: 10px 20px; font-size: 13px; font-weight: bold; }");
+
+    QLabel *searchLabel = new QLabel("Search:");
+    searchLabel->setStyleSheet("font-weight: bold; font-size: 14px; color: #2c3e50;");
+
+    searchLayout->addWidget(searchLabel);
     searchLayout->addWidget(m_productSearchEdit);
     searchLayout->addWidget(searchBtn);
 
-    // Product table
     m_productTable = new QTableWidget;
     m_productTable->setColumnCount(6);
     QStringList headers = {"ID", "Name", "Category", "Subcategory", "Price", "Stock"};
@@ -155,7 +170,6 @@ void AdminPanel::setupProductTab()
     leftLayout->addLayout(searchLayout);
     leftLayout->addWidget(m_productTable);
 
-    // Right side - Product form
     QWidget *rightWidget = new QWidget;
     QVBoxLayout *rightLayout = new QVBoxLayout(rightWidget);
 
@@ -179,89 +193,13 @@ void AdminPanel::setupProductTab()
     formLayout->addRow("Price:", m_productPriceSpinBox);
     formLayout->addRow("Stock:", m_productStockSpinBox);
 
-    // Buttons
     QHBoxLayout *buttonLayout = new QHBoxLayout;
     buttonLayout->setSpacing(10);
-    
+
     m_addProductBtn = new QPushButton("➕ Add Product");
-    m_addProductBtn->setStyleSheet(R"(
-        QPushButton {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #27ae60, stop: 1 #229954);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #2ecc71, stop: 1 #27ae60);
-        }
-    )");
-    
     m_editProductBtn = new QPushButton("✏️ Edit Product");
-    m_editProductBtn->setStyleSheet(R"(
-        QPushButton {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #3498db, stop: 1 #2980b9);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #2980b9, stop: 1 #21618c);
-        }
-        QPushButton:disabled {
-            background: #95a5a6;
-            color: #7f8c8d;
-        }
-    )");
-    
     m_deleteProductBtn = new QPushButton("❌ Delete Product");
-    m_deleteProductBtn->setStyleSheet(R"(
-        QPushButton {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #e74c3c, stop: 1 #c0392b);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #ec7063, stop: 1 #e74c3c);
-        }
-        QPushButton:disabled {
-            background: #95a5a6;
-            color: #7f8c8d;
-        }
-    )");
-    
     m_refreshProductBtn = new QPushButton("🔄 Refresh");
-    m_refreshProductBtn->setStyleSheet(R"(
-        QPushButton {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #f39c12, stop: 1 #e67e22);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #e67e22, stop: 1 #d35400);
-        }
-    )");
 
     m_editProductBtn->setEnabled(false);
     m_deleteProductBtn->setEnabled(false);
@@ -284,7 +222,6 @@ void AdminPanel::setupProductTab()
 
     m_tabWidget->addTab(m_productTab, "Products");
 
-    // Connect signals
     connect(searchBtn, &QPushButton::clicked, this, &AdminPanel::onSearchProducts);
     connect(m_productSearchEdit, &QLineEdit::returnPressed, this, &AdminPanel::onSearchProducts);
     connect(m_addProductBtn, &QPushButton::clicked, this, &AdminPanel::onAddProduct);
@@ -297,11 +234,9 @@ void AdminPanel::setupProductTab()
 void AdminPanel::setupSupplierTab()
 {
     m_supplierTab = new QWidget;
-
     QHBoxLayout *mainLayout = new QHBoxLayout(m_supplierTab);
     QSplitter *splitter = new QSplitter(Qt::Horizontal);
 
-    // Left side - Supplier list
     QWidget *leftWidget = new QWidget;
     QVBoxLayout *leftLayout = new QVBoxLayout(leftWidget);
 
@@ -316,7 +251,6 @@ void AdminPanel::setupSupplierTab()
     leftLayout->addWidget(new QLabel("Suppliers:"));
     leftLayout->addWidget(m_supplierTable);
 
-    // Right side - Supplier form
     QWidget *rightWidget = new QWidget;
     QVBoxLayout *rightLayout = new QVBoxLayout(rightWidget);
 
@@ -329,89 +263,13 @@ void AdminPanel::setupSupplierTab()
     formLayout->addRow("Name:", m_supplierNameEdit);
     formLayout->addRow("Contact:", m_supplierContactEdit);
 
-    // Buttons
     QHBoxLayout *buttonLayout = new QHBoxLayout;
     buttonLayout->setSpacing(10);
-    
+
     m_addSupplierBtn = new QPushButton("➕ Add Supplier");
-    m_addSupplierBtn->setStyleSheet(R"(
-        QPushButton {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #27ae60, stop: 1 #229954);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #2ecc71, stop: 1 #27ae60);
-        }
-    )");
-    
     m_editSupplierBtn = new QPushButton("✏️ Edit Supplier");
-    m_editSupplierBtn->setStyleSheet(R"(
-        QPushButton {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #3498db, stop: 1 #2980b9);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #2980b9, stop: 1 #21618c);
-        }
-        QPushButton:disabled {
-            background: #95a5a6;
-            color: #7f8c8d;
-        }
-    )");
-    
     m_deleteSupplierBtn = new QPushButton("❌ Delete Supplier");
-    m_deleteSupplierBtn->setStyleSheet(R"(
-        QPushButton {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #e74c3c, stop: 1 #c0392b);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #ec7063, stop: 1 #e74c3c);
-        }
-        QPushButton:disabled {
-            background: #95a5a6;
-            color: #7f8c8d;
-        }
-    )");
-    
     m_refreshSupplierBtn = new QPushButton("🔄 Refresh");
-    m_refreshSupplierBtn->setStyleSheet(R"(
-        QPushButton {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #f39c12, stop: 1 #e67e22);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #e67e22, stop: 1 #d35400);
-        }
-    )");
 
     m_editSupplierBtn->setEnabled(false);
     m_deleteSupplierBtn->setEnabled(false);
@@ -434,7 +292,6 @@ void AdminPanel::setupSupplierTab()
 
     m_tabWidget->addTab(m_supplierTab, "Suppliers");
 
-    // Connect signals
     connect(m_addSupplierBtn, &QPushButton::clicked, this, &AdminPanel::onAddSupplier);
     connect(m_editSupplierBtn, &QPushButton::clicked, this, &AdminPanel::onEditSupplier);
     connect(m_deleteSupplierBtn, &QPushButton::clicked, this, &AdminPanel::onDeleteSupplier);
@@ -445,10 +302,8 @@ void AdminPanel::setupSupplierTab()
 void AdminPanel::setupTransactionTab()
 {
     m_transactionTab = new QWidget;
-
     QVBoxLayout *mainLayout = new QVBoxLayout(m_transactionTab);
 
-    // Top section - Add transaction form
     QGroupBox *addGroup = new QGroupBox("Add New Transaction");
     QHBoxLayout *addLayout = new QHBoxLayout(addGroup);
 
@@ -473,42 +328,9 @@ void AdminPanel::setupTransactionTab()
 
     QVBoxLayout *buttonLayout = new QVBoxLayout;
     buttonLayout->setSpacing(10);
-    
+
     m_addTransactionBtn = new QPushButton("➕ Add Transaction");
-    m_addTransactionBtn->setStyleSheet(R"(
-        QPushButton {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #27ae60, stop: 1 #229954);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 20px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #2ecc71, stop: 1 #27ae60);
-        }
-    )");
-    
     m_printPaymentSlipBtn = new QPushButton("🖨️ Print Payment Slip");
-    m_printPaymentSlipBtn->setStyleSheet(R"(
-        QPushButton {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #8e44ad, stop: 1 #7d3c98);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 20px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #a569bd, stop: 1 #8e44ad);
-        }
-    )");
     buttonLayout->addWidget(m_addTransactionBtn);
     buttonLayout->addWidget(m_printPaymentSlipBtn);
     buttonLayout->addStretch();
@@ -516,37 +338,19 @@ void AdminPanel::setupTransactionTab()
     addLayout->addLayout(formLayout);
     addLayout->addLayout(buttonLayout);
 
-    // Middle section - Filter
     QHBoxLayout *filterLayout = new QHBoxLayout;
     filterLayout->addWidget(new QLabel("Filter by Supplier:"));
     m_supplierFilterCombo = new QComboBox;
     m_supplierFilterCombo->addItem("All Suppliers", 0);
     filterLayout->addWidget(m_supplierFilterCombo);
     m_refreshTransactionBtn = new QPushButton("🔄 Refresh");
-    m_refreshTransactionBtn->setStyleSheet(R"(
-        QPushButton {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #f39c12, stop: 1 #e67e22);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 10px 20px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #e67e22, stop: 1 #d35400);
-        }
-    )");
     filterLayout->addWidget(m_refreshTransactionBtn);
     filterLayout->addStretch();
 
-    // Bottom section - Transactions table
     m_transactionTable = new QTableWidget;
     m_transactionTable->setColumnCount(7);
-    QStringList headers = {"ID", "Supplier", "Date", "Description", "Purchases", "Payments", "Balance"};
-    m_transactionTable->setHorizontalHeaderLabels(headers);
+    QStringList transHeaders = {"ID", "Supplier", "Date", "Description", "Purchases", "Payments", "Balance"};
+    m_transactionTable->setHorizontalHeaderLabels(transHeaders);
     m_transactionTable->setSelectionBehavior(QAbstractItemView::SelectRows);
     m_transactionTable->setAlternatingRowColors(true);
     m_transactionTable->horizontalHeader()->setStretchLastSection(true);
@@ -557,21 +361,87 @@ void AdminPanel::setupTransactionTab()
 
     m_tabWidget->addTab(m_transactionTab, "Transactions");
 
-    // Connect signals
     connect(m_addTransactionBtn, &QPushButton::clicked, this, &AdminPanel::onAddTransaction);
     connect(m_refreshTransactionBtn, &QPushButton::clicked, this, &AdminPanel::onRefreshTransactions);
-    connect(m_supplierFilterCombo, QOverload<int>::of(&QComboBox::currentIndexChanged),
-            this, &AdminPanel::onSupplierFilterChanged);
+    connect(m_supplierFilterCombo, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &AdminPanel::onSupplierFilterChanged);
     connect(m_printPaymentSlipBtn, &QPushButton::clicked, this, &AdminPanel::onPrintPaymentSlip);
+}
+
+void AdminPanel::setupDailySalesTab()
+{
+    m_dailySalesTab = new QWidget;
+    QVBoxLayout *mainLayout = new QVBoxLayout(m_dailySalesTab);
+    mainLayout->setSpacing(15);
+    mainLayout->setContentsMargins(15, 15, 15, 15);
+
+    QGroupBox *headerGroup = new QGroupBox("📊 DAILY SALES REPORT");
+    QHBoxLayout *headerLayout = new QHBoxLayout(headerGroup);
+    headerLayout->setSpacing(15);
+
+    QLabel *dateLabel = new QLabel("Select Date:");
+    dateLabel->setStyleSheet("font-weight: bold; font-size: 14px; color: #2c3e50;");
+    headerLayout->addWidget(dateLabel);
+
+    m_dailySalesDateEdit = new QDateEdit(QDate::currentDate());
+    m_dailySalesDateEdit->setCalendarPopup(true);
+    headerLayout->addWidget(m_dailySalesDateEdit);
+
+    m_refreshDailySalesBtn = new QPushButton("🔄 Refresh Daily Sales");
+    headerLayout->addWidget(m_refreshDailySalesBtn);
+    headerLayout->addStretch();
+
+    QHBoxLayout *summaryLayout = new QHBoxLayout;
+    summaryLayout->setSpacing(15);
+
+    QFrame *totalFrame = new QFrame;
+    totalFrame->setFrameStyle(QFrame::StyledPanel);
+    QVBoxLayout *totalLayout = new QVBoxLayout(totalFrame);
+    QLabel *totalTextLabel = new QLabel("💰 Total Sales");
+    totalTextLabel->setStyleSheet("color: white; font-weight: bold; font-size: 16px;");
+    m_dailySalesTotalLabel = new QLabel("Rs. 0.00");
+    m_dailySalesTotalLabel->setStyleSheet("color: white; font-weight: bold; font-size: 28px;");
+    totalLayout->addWidget(totalTextLabel);
+    totalLayout->addWidget(m_dailySalesTotalLabel);
+
+    QFrame *countFrame = new QFrame;
+    countFrame->setFrameStyle(QFrame::StyledPanel);
+    QVBoxLayout *countLayout = new QVBoxLayout(countFrame);
+    QLabel *countTextLabel = new QLabel("📦 Total Transactions");
+    countTextLabel->setStyleSheet("color: white; font-weight: bold; font-size: 16px;");
+    m_dailySalesCountLabel = new QLabel("0");
+    m_dailySalesCountLabel->setStyleSheet("color: white; font-weight: bold; font-size: 28px;");
+    countLayout->addWidget(countTextLabel);
+    countLayout->addWidget(m_dailySalesCountLabel);
+
+    summaryLayout->addWidget(totalFrame);
+    summaryLayout->addWidget(countFrame);
+    summaryLayout->addStretch();
+
+    m_dailySalesTable = new QTableWidget;
+    m_dailySalesTable->setColumnCount(5);
+    QStringList headers = {"Sale ID", "Time", "Total Amount", "Items Count", "Details"};
+    m_dailySalesTable->setHorizontalHeaderLabels(headers);
+    m_dailySalesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
+    m_dailySalesTable->setAlternatingRowColors(true);
+    m_dailySalesTable->horizontalHeader()->setStretchLastSection(true);
+
+    mainLayout->addWidget(headerGroup);
+    mainLayout->addLayout(summaryLayout);
+    mainLayout->addWidget(m_dailySalesTable);
+
+    m_tabWidget->addTab(m_dailySalesTab, "📊 Daily Sales");
+
+    connect(m_refreshDailySalesBtn, &QPushButton::clicked, this, &AdminPanel::onLoadDailySales);
+    connect(m_dailySalesDateEdit, &QDateEdit::dateChanged, this, &AdminPanel::onLoadDailySales);
+
+    onLoadDailySales();
 }
 
 void AdminPanel::setupReportsTab()
 {
     m_reportsTab = new QWidget;
-
     QVBoxLayout *mainLayout = new QVBoxLayout(m_reportsTab);
 
-    // Report controls
     QGroupBox *controlGroup = new QGroupBox("Report Settings");
     QHBoxLayout *controlLayout = new QHBoxLayout(controlGroup);
 
@@ -585,40 +455,7 @@ void AdminPanel::setupReportsTab()
     m_reportEndDateEdit = new QDateEdit(QDate::currentDate());
 
     m_generateReportBtn = new QPushButton("📊 Generate Report");
-    m_generateReportBtn->setStyleSheet(R"(
-        QPushButton {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #3498db, stop: 1 #2980b9);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 25px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #2980b9, stop: 1 #21618c);
-        }
-    )");
-    
     m_exportReportBtn = new QPushButton("💾 Export to CSV");
-    m_exportReportBtn->setStyleSheet(R"(
-        QPushButton {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #16a085, stop: 1 #138d75);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            padding: 12px 25px;
-            font-size: 13px;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #138d75, stop: 1 #0e6655);
-        }
-    )");
 
     controlLayout->addWidget(new QLabel("Report Type:"));
     controlLayout->addWidget(m_reportTypeCombo);
@@ -630,7 +467,6 @@ void AdminPanel::setupReportsTab()
     controlLayout->addWidget(m_exportReportBtn);
     controlLayout->addStretch();
 
-    // Reports table
     m_reportsTable = new QTableWidget;
     m_reportsTable->setAlternatingRowColors(true);
     m_reportsTable->horizontalHeader()->setStretchLastSection(true);
@@ -640,192 +476,13 @@ void AdminPanel::setupReportsTab()
 
     m_tabWidget->addTab(m_reportsTab, "Reports");
 
-    // Connect signals
     connect(m_generateReportBtn, &QPushButton::clicked, this, &AdminPanel::onGenerateReports);
     connect(m_exportReportBtn, &QPushButton::clicked, this, &AdminPanel::onExportData);
-}
-
-void AdminPanel::setupDailySalesTab()
-{
-    m_dailySalesTab = new QWidget;
-
-    QVBoxLayout *mainLayout = new QVBoxLayout(m_dailySalesTab);
-    mainLayout->setSpacing(15);
-    mainLayout->setContentsMargins(15, 15, 15, 15);
-
-    // Header section with date selector
-    QGroupBox *headerGroup = new QGroupBox("📊 DAILY SALES REPORT");
-    headerGroup->setStyleSheet(R"(
-        QGroupBox {
-            font-weight: bold;
-            font-size: 16px;
-            border: 3px solid #27ae60;
-            border-radius: 12px;
-            margin-top: 12px;
-            padding-top: 20px;
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #ffffff, stop: 1 #f8f9fa);
-        }
-        QGroupBox::title {
-            subcontrol-origin: margin;
-            left: 20px;
-            padding: 0 10px;
-            color: #2c3e50;
-        }
-    )");
-    QHBoxLayout *headerLayout = new QHBoxLayout(headerGroup);
-    headerLayout->setSpacing(15);
-
-    QLabel *dateLabel = new QLabel("Select Date:");
-    dateLabel->setStyleSheet("font-weight: bold; font-size: 14px; color: #2c3e50;");
-    headerLayout->addWidget(dateLabel);
-
-    m_dailySalesDateEdit = new QDateEdit(QDate::currentDate());
-    m_dailySalesDateEdit->setCalendarPopup(true);
-    m_dailySalesDateEdit->setStyleSheet(R"(
-        QDateEdit {
-            border: 2px solid #27ae60;
-            border-radius: 8px;
-            padding: 10px;
-            font-size: 14px;
-            background: white;
-            min-width: 200px;
-        }
-        QDateEdit:focus {
-            border: 3px solid #229954;
-            background: #ecf0f1;
-        }
-        QDateEdit::drop-down {
-            border: none;
-            width: 30px;
-        }
-    )");
-    headerLayout->addWidget(m_dailySalesDateEdit);
-
-    m_refreshDailySalesBtn = new QPushButton("🔄 Refresh Daily Sales");
-    m_refreshDailySalesBtn->setStyleSheet(R"(
-        QPushButton {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #27ae60, stop: 1 #229954);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            padding: 12px 30px;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        QPushButton:hover {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #2ecc71, stop: 1 #27ae60);
-        }
-        QPushButton:pressed {
-            background: #229954;
-        }
-    )");
-    headerLayout->addWidget(m_refreshDailySalesBtn);
-    headerLayout->addStretch();
-
-    // Summary cards
-    QHBoxLayout *summaryLayout = new QHBoxLayout;
-    summaryLayout->setSpacing(15);
-
-    QFrame *totalFrame = new QFrame;
-    totalFrame->setFrameStyle(QFrame::StyledPanel);
-    totalFrame->setStyleSheet(R"(
-        QFrame {
-            background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,
-                                      stop: 0 #667eea, stop: 1 #764ba2);
-            border-radius: 12px;
-            padding: 20px;
-            border: 3px solid #5a67d8;
-        }
-    )");
-    QVBoxLayout *totalLayout = new QVBoxLayout(totalFrame);
-    QLabel *totalTextLabel = new QLabel("💰 Total Sales");
-    totalTextLabel->setStyleSheet("color: white; font-weight: bold; font-size: 16px;");
-    m_dailySalesTotalLabel = new QLabel("Rs. 0.00");
-    m_dailySalesTotalLabel->setStyleSheet("color: white; font-weight: bold; font-size: 28px;");
-    totalLayout->addWidget(totalTextLabel);
-    totalLayout->addWidget(m_dailySalesTotalLabel);
-
-    QFrame *countFrame = new QFrame;
-    countFrame->setFrameStyle(QFrame::StyledPanel);
-    countFrame->setStyleSheet(R"(
-        QFrame {
-            background: qlineargradient(x1: 0, y1: 0, x2: 1, y2: 0,
-                                      stop: 0 #f093fb, stop: 1 #f5576c);
-            border-radius: 12px;
-            padding: 20px;
-            border: 3px solid #e91e63;
-        }
-    )");
-    QVBoxLayout *countLayout = new QVBoxLayout(countFrame);
-    QLabel *countTextLabel = new QLabel("📦 Total Transactions");
-    countTextLabel->setStyleSheet("color: white; font-weight: bold; font-size: 16px;");
-    m_dailySalesCountLabel = new QLabel("0");
-    m_dailySalesCountLabel->setStyleSheet("color: white; font-weight: bold; font-size: 28px;");
-    countLayout->addWidget(countTextLabel);
-    countLayout->addWidget(m_dailySalesCountLabel);
-
-    summaryLayout->addWidget(totalFrame);
-    summaryLayout->addWidget(countFrame);
-    summaryLayout->addStretch();
-
-    // Daily sales table
-    m_dailySalesTable = new QTableWidget;
-    m_dailySalesTable->setColumnCount(5);
-    QStringList headers = {"Sale ID", "Time", "Total Amount", "Items Count", "Details"};
-    m_dailySalesTable->setHorizontalHeaderLabels(headers);
-    m_dailySalesTable->setSelectionBehavior(QAbstractItemView::SelectRows);
-    m_dailySalesTable->setAlternatingRowColors(true);
-    m_dailySalesTable->horizontalHeader()->setStretchLastSection(true);
-    m_dailySalesTable->setStyleSheet(R"(
-        QTableWidget {
-            background: white;
-            border: 2px solid #bdc3c7;
-            border-radius: 10px;
-            gridline-color: #ecf0f1;
-            font-size: 13px;
-            selection-background-color: #27ae60;
-            selection-color: white;
-        }
-        QTableWidget::item {
-            padding: 10px;
-        }
-        QTableWidget::item:selected {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #27ae60, stop: 1 #229954);
-            color: white;
-        }
-        QHeaderView::section {
-            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                      stop: 0 #27ae60, stop: 1 #229954);
-            color: white;
-            padding: 12px;
-            border: none;
-            font-weight: bold;
-            font-size: 14px;
-        }
-    )");
-
-    mainLayout->addWidget(headerGroup);
-    mainLayout->addLayout(summaryLayout);
-    mainLayout->addWidget(m_dailySalesTable);
-
-    m_tabWidget->addTab(m_dailySalesTab, "📊 Daily Sales");
-
-    // Connect signals
-    connect(m_refreshDailySalesBtn, &QPushButton::clicked, this, &AdminPanel::onLoadDailySales);
-    connect(m_dailySalesDateEdit, &QDateEdit::dateChanged, this, &AdminPanel::onLoadDailySales);
-
-    // Load today's sales by default
-    onLoadDailySales();
 }
 
 void AdminPanel::loadProducts()
 {
     QSqlQuery query = DatabaseManager::instance().getAllProducts();
-
     m_productTable->setRowCount(0);
     int row = 0;
 
@@ -838,23 +495,19 @@ void AdminPanel::loadProducts()
         m_productTable->setItem(row, 4, new QTableWidgetItem(QString::number(query.value("price").toDouble(), 'f', 2)));
         m_productTable->setItem(row, 5, new QTableWidgetItem(query.value("stock_quantity").toString()));
 
-        // Highlight low stock items
         if (query.value("stock_quantity").toInt() <= 10) {
             for (int col = 0; col < m_productTable->columnCount(); col++) {
                 m_productTable->item(row, col)->setBackground(QColor(231, 76, 60, 100));
             }
         }
-
         row++;
     }
-
     statusBar()->showMessage(QString("Loaded %1 products").arg(row));
 }
 
 void AdminPanel::loadSuppliers()
 {
     QSqlQuery query = DatabaseManager::instance().getAllSuppliers();
-
     m_supplierTable->setRowCount(0);
     int row = 0;
 
@@ -865,14 +518,12 @@ void AdminPanel::loadSuppliers()
         m_supplierTable->setItem(row, 2, new QTableWidgetItem(query.value("contact").toString()));
         row++;
     }
-
     statusBar()->showMessage(QString("Loaded %1 suppliers").arg(row));
 }
 
 void AdminPanel::loadTransactions()
 {
     QSqlQuery query = DatabaseManager::instance().getAllTransactions();
-
     m_transactionTable->setRowCount(0);
     int row = 0;
 
@@ -886,11 +537,9 @@ void AdminPanel::loadTransactions()
         m_transactionTable->setItem(row, 5, new QTableWidgetItem(QString::number(query.value("payments").toDouble(), 'f', 2)));
         m_transactionTable->setItem(row, 6, new QTableWidgetItem(QString::number(query.value("balance").toDouble(), 'f', 2)));
 
-        // Color code balance
         double balance = query.value("balance").toDouble();
         QColor balanceColor = balance >= 0 ? QColor(39, 174, 96, 100) : QColor(231, 76, 60, 100);
         m_transactionTable->item(row, 6)->setBackground(balanceColor);
-
         row++;
     }
 }
@@ -898,7 +547,6 @@ void AdminPanel::loadTransactions()
 void AdminPanel::loadCategories()
 {
     QSqlQuery query = DatabaseManager::instance().getCategories();
-
     m_productCategoryCombo->clear();
     while (query.next()) {
         m_productCategoryCombo->addItem(query.value("category").toString());
@@ -944,13 +592,8 @@ void AdminPanel::onAddProduct()
         return;
     }
 
-    if (DatabaseManager::instance().addProduct(
-            m_productNameEdit->text().trimmed(),
-            m_productCategoryCombo->currentText(),
-            m_productSubcategoryEdit->text().trimmed(),
-            m_productPriceSpinBox->value(),
-            m_productStockSpinBox->value())) {
-
+    if (DatabaseManager::instance().addProduct(m_productNameEdit->text().trimmed(), m_productCategoryCombo->currentText(),
+                                               m_productSubcategoryEdit->text().trimmed(), m_productPriceSpinBox->value(), m_productStockSpinBox->value())) {
         QMessageBox::information(this, "Success", "Product added successfully!");
         clearProductForm();
         loadProducts();
@@ -972,14 +615,9 @@ void AdminPanel::onEditProduct()
         return;
     }
 
-    if (DatabaseManager::instance().updateProduct(
-            m_selectedProductId,
-            m_productNameEdit->text().trimmed(),
-            m_productCategoryCombo->currentText(),
-            m_productSubcategoryEdit->text().trimmed(),
-            m_productPriceSpinBox->value(),
-            m_productStockSpinBox->value())) {
-
+    if (DatabaseManager::instance().updateProduct(m_selectedProductId, m_productNameEdit->text().trimmed(),
+                                                  m_productCategoryCombo->currentText(), m_productSubcategoryEdit->text().trimmed(),
+                                                  m_productPriceSpinBox->value(), m_productStockSpinBox->value())) {
         QMessageBox::information(this, "Success", "Product updated successfully!");
         clearProductForm();
         loadProducts();
@@ -997,8 +635,7 @@ void AdminPanel::onDeleteProduct()
         return;
     }
 
-    int ret = QMessageBox::question(this, "Confirm Delete",
-                                    "Are you sure you want to delete this product?",
+    int ret = QMessageBox::question(this, "Confirm Delete", "Are you sure you want to delete this product?",
                                     QMessageBox::Yes | QMessageBox::No);
 
     if (ret == QMessageBox::Yes) {
@@ -1033,7 +670,6 @@ void AdminPanel::onSearchProducts()
     }
 
     QSqlQuery query = DatabaseManager::instance().searchProducts(searchTerm);
-
     m_productTable->setRowCount(0);
     int row = 0;
 
@@ -1047,7 +683,6 @@ void AdminPanel::onSearchProducts()
         m_productTable->setItem(row, 5, new QTableWidgetItem(query.value("stock_quantity").toString()));
         row++;
     }
-
     statusBar()->showMessage(QString("Found %1 products matching '%2'").arg(row).arg(searchTerm));
 }
 
@@ -1064,7 +699,6 @@ void AdminPanel::onProductSelectionChanged()
     int row = selectedItems.first()->row();
     m_selectedProductId = m_productTable->item(row, 0)->text().toInt();
 
-    // Populate form with selected product data
     m_productNameEdit->setText(m_productTable->item(row, 1)->text());
     m_productCategoryCombo->setCurrentText(m_productTable->item(row, 2)->text());
     m_productSubcategoryEdit->setText(m_productTable->item(row, 3)->text());
@@ -1082,10 +716,7 @@ void AdminPanel::onAddSupplier()
         return;
     }
 
-    if (DatabaseManager::instance().addSupplier(
-            m_supplierNameEdit->text().trimmed(),
-            m_supplierContactEdit->text().trimmed())) {
-
+    if (DatabaseManager::instance().addSupplier(m_supplierNameEdit->text().trimmed(), m_supplierContactEdit->text().trimmed())) {
         QMessageBox::information(this, "Success", "Supplier added successfully!");
         clearSupplierForm();
         loadSuppliers();
@@ -1107,11 +738,8 @@ void AdminPanel::onEditSupplier()
         return;
     }
 
-    if (DatabaseManager::instance().updateSupplier(
-            m_selectedSupplierId,
-            m_supplierNameEdit->text().trimmed(),
-            m_supplierContactEdit->text().trimmed())) {
-
+    if (DatabaseManager::instance().updateSupplier(m_selectedSupplierId, m_supplierNameEdit->text().trimmed(),
+                                                   m_supplierContactEdit->text().trimmed())) {
         QMessageBox::information(this, "Success", "Supplier updated successfully!");
         clearSupplierForm();
         loadSuppliers();
@@ -1171,7 +799,6 @@ void AdminPanel::onSupplierSelectionChanged()
     int row = selectedItems.first()->row();
     m_selectedSupplierId = m_supplierTable->item(row, 0)->text().toInt();
 
-    // Populate form with selected supplier data
     m_supplierNameEdit->setText(m_supplierTable->item(row, 1)->text());
     m_supplierContactEdit->setText(m_supplierTable->item(row, 2)->text());
 
@@ -1199,13 +826,10 @@ void AdminPanel::onAddTransaction()
 
     if (DatabaseManager::instance().addTransaction(supplierId, date, description, purchases, payments)) {
         QMessageBox::information(this, "Success", "Transaction added successfully!");
-
-        // Clear form
         m_transactionDescEdit->clear();
         m_transactionPurchaseSpinBox->setValue(0.0);
         m_transactionPaymentSpinBox->setValue(0.0);
         m_transactionDateEdit->setDate(QDate::currentDate());
-
         loadTransactions();
     } else {
         QMessageBox::critical(this, "Error", "Failed to add transaction.");
@@ -1226,7 +850,6 @@ void AdminPanel::onSupplierFilterChanged()
         loadTransactions();
     } else {
         QSqlQuery query = DatabaseManager::instance().getTransactionsBySupplier(supplierId);
-
         m_transactionTable->setRowCount(0);
         int row = 0;
 
@@ -1240,11 +863,9 @@ void AdminPanel::onSupplierFilterChanged()
             m_transactionTable->setItem(row, 5, new QTableWidgetItem(QString::number(query.value("payments").toDouble(), 'f', 2)));
             m_transactionTable->setItem(row, 6, new QTableWidgetItem(QString::number(query.value("balance").toDouble(), 'f', 2)));
 
-            // Color code balance
             double balance = query.value("balance").toDouble();
             QColor balanceColor = balance >= 0 ? QColor(39, 174, 96, 100) : QColor(231, 76, 60, 100);
             m_transactionTable->item(row, 6)->setBackground(balanceColor);
-
             row++;
         }
     }
@@ -1260,7 +881,6 @@ void AdminPanel::onPrintPaymentSlip()
     int supplierId = m_transactionSupplierCombo->currentData().toInt();
     QString supplierName = m_transactionSupplierCombo->currentText();
 
-    // Calculate totals for the supplier
     QSqlQuery query = DatabaseManager::instance().getTransactionsBySupplier(supplierId);
     double totalPurchases = 0.0;
     double totalPayments = 0.0;
@@ -1269,7 +889,7 @@ void AdminPanel::onPrintPaymentSlip()
     while (query.next()) {
         totalPurchases += query.value("purchases").toDouble();
         totalPayments += query.value("payments").toDouble();
-        balance = query.value("balance").toDouble(); // Last balance
+        balance = query.value("balance").toDouble();
     }
 
     m_slipPrinter->previewPaymentSlip(supplierName, totalPurchases, totalPayments, balance, this);
@@ -1288,10 +908,7 @@ void AdminPanel::onGenerateReports()
         m_reportsTable->setColumnCount(headers.size());
         m_reportsTable->setHorizontalHeaderLabels(headers);
 
-        QSqlQuery salesQuery = DatabaseManager::instance().getSalesByDateRange(
-            startDate.toString("yyyy-MM-dd"),
-            endDate.toString("yyyy-MM-dd"));
-
+        QSqlQuery salesQuery = DatabaseManager::instance().getSalesByDateRange(startDate.toString("yyyy-MM-dd"), endDate.toString("yyyy-MM-dd"));
         m_reportsTable->setRowCount(0);
         int row = 0;
 
@@ -1299,7 +916,6 @@ void AdminPanel::onGenerateReports()
             m_reportsTable->insertRow(row);
             int saleId = salesQuery.value("id").toInt();
 
-            // Get items count
             QSqlQuery itemsQuery = DatabaseManager::instance().getSaleItems(saleId);
             int itemsCount = 0;
             while (itemsQuery.next()) itemsCount++;
@@ -1316,7 +932,6 @@ void AdminPanel::onGenerateReports()
         m_reportsTable->setHorizontalHeaderLabels(headers);
 
         QSqlQuery query = DatabaseManager::instance().getLowStockProducts(10);
-
         m_reportsTable->setRowCount(0);
         int row = 0;
 
@@ -1327,11 +942,9 @@ void AdminPanel::onGenerateReports()
             m_reportsTable->setItem(row, 2, new QTableWidgetItem(query.value("category").toString()));
             m_reportsTable->setItem(row, 3, new QTableWidgetItem(query.value("stock_quantity").toString()));
 
-            // Highlight low stock
             for (int col = 0; col < m_reportsTable->columnCount(); col++) {
                 m_reportsTable->item(row, col)->setBackground(QColor(231, 76, 60, 100));
             }
-
             row++;
         }
     } else if (reportType == "suppliers") {
@@ -1340,7 +953,6 @@ void AdminPanel::onGenerateReports()
         m_reportsTable->setHorizontalHeaderLabels(headers);
 
         QSqlQuery suppliersQuery = DatabaseManager::instance().getAllSuppliers();
-
         m_reportsTable->setRowCount(0);
         int row = 0;
 
@@ -1365,10 +977,8 @@ void AdminPanel::onGenerateReports()
             m_reportsTable->setItem(row, 2, new QTableWidgetItem(QString::number(totalPayments, 'f', 2)));
             m_reportsTable->setItem(row, 3, new QTableWidgetItem(QString::number(balance, 'f', 2)));
 
-            // Color code balance
             QColor balanceColor = balance >= 0 ? QColor(39, 174, 96, 100) : QColor(231, 76, 60, 100);
             m_reportsTable->item(row, 3)->setBackground(balanceColor);
-
             row++;
         }
     } else if (reportType == "products") {
@@ -1377,7 +987,6 @@ void AdminPanel::onGenerateReports()
         m_reportsTable->setHorizontalHeaderLabels(headers);
 
         QSqlQuery query = DatabaseManager::instance().getAllProducts();
-
         m_reportsTable->setRowCount(0);
         int row = 0;
         double totalValue = 0.0;
@@ -1397,7 +1006,6 @@ void AdminPanel::onGenerateReports()
             row++;
         }
 
-        // Add total row
         m_reportsTable->insertRow(row);
         m_reportsTable->setItem(row, 0, new QTableWidgetItem("TOTAL"));
         m_reportsTable->setItem(row, 4, new QTableWidgetItem(QString::number(totalValue, 'f', 2)));
@@ -1434,14 +1042,12 @@ void AdminPanel::onExportData()
 
     QTextStream stream(&file);
 
-    // Write headers
     QStringList headers;
     for (int col = 0; col < m_reportsTable->columnCount(); col++) {
         headers << m_reportsTable->horizontalHeaderItem(col)->text();
     }
     stream << headers.join(",") << "\n";
 
-    // Write data
     for (int row = 0; row < m_reportsTable->rowCount(); row++) {
         QStringList rowData;
         for (int col = 0; col < m_reportsTable->columnCount(); col++) {
@@ -1466,7 +1072,7 @@ void AdminPanel::onLoadDailySales()
 
     while (query.next()) {
         m_dailySalesTable->insertRow(row);
-        
+
         int saleId = query.value("id").toInt();
         QString dateTime = query.value("date").toString();
         double total = query.value("total").toDouble();
@@ -1474,32 +1080,15 @@ void AdminPanel::onLoadDailySales()
 
         m_dailySalesTable->setItem(row, 0, new QTableWidgetItem(QString::number(saleId)));
         m_dailySalesTable->setItem(row, 1, new QTableWidgetItem(dateTime));
-        
+
         QTableWidgetItem *totalItem = new QTableWidgetItem(QString("Rs. %1").arg(total, 0, 'f', 2));
         totalItem->setTextAlignment(Qt::AlignRight | Qt::AlignVCenter);
         totalItem->setForeground(QColor(27, 142, 96));
         m_dailySalesTable->setItem(row, 2, totalItem);
-        
+
         m_dailySalesTable->setItem(row, 3, new QTableWidgetItem(QString::number(itemsCount)));
 
-        // Details button
         QPushButton *detailsBtn = new QPushButton("View Details");
-        detailsBtn->setStyleSheet(R"(
-            QPushButton {
-                background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                          stop: 0 #3498db, stop: 1 #2980b9);
-                color: white;
-                border: none;
-                border-radius: 6px;
-                padding: 6px 15px;
-                font-size: 12px;
-                font-weight: bold;
-            }
-            QPushButton:hover {
-                background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                          stop: 0 #2980b9, stop: 1 #21618c);
-            }
-        )");
         connect(detailsBtn, &QPushButton::clicked, [this, saleId]() {
             QSqlQuery itemsQuery = DatabaseManager::instance().getSaleItems(saleId);
             QString details = QString("Sale ID: %1\n\nItems:\n").arg(saleId);
@@ -1510,7 +1099,7 @@ void AdminPanel::onLoadDailySales()
                 double price = itemsQuery.value("unit_price").toDouble();
                 double total = itemsQuery.value("total_price").toDouble();
                 details += QString("%1 x %2 @ Rs. %3 = Rs. %4\n")
-                    .arg(qty).arg(name).arg(price, 0, 'f', 2).arg(total, 0, 'f', 2);
+                               .arg(qty).arg(name).arg(price, 0, 'f', 2).arg(total, 0, 'f', 2);
                 itemTotal += total;
             }
             details += QString("\nTotal: Rs. %1").arg(itemTotal, 0, 'f', 2);
@@ -1523,14 +1112,11 @@ void AdminPanel::onLoadDailySales()
         row++;
     }
 
-    // Update summary labels
     m_dailySalesTotalLabel->setText(QString("Rs. %1").arg(totalSales, 0, 'f', 2));
     m_dailySalesCountLabel->setText(QString::number(transactionCount));
 
     statusBar()->showMessage(QString("Loaded %1 sales for %2 - Total: Rs. %3")
-                             .arg(transactionCount)
-                             .arg(selectedDate)
-                             .arg(totalSales, 0, 'f', 2));
+                                 .arg(transactionCount).arg(selectedDate).arg(totalSales, 0, 'f', 2));
 }
 
 void AdminPanel::onLowStockAlert()
@@ -1539,13 +1125,10 @@ void AdminPanel::onLowStockAlert()
 
     QStringList lowStockItems;
     while (query.next()) {
-        lowStockItems << QString("%1 (Stock: %2)")
-        .arg(query.value("name").toString())
-            .arg(query.value("stock_quantity").toInt());
+        lowStockItems << QString("%1 (Stock: %2)").arg(query.value("name").toString()).arg(query.value("stock_quantity").toInt());
     }
 
     if (!lowStockItems.isEmpty()) {
-        QMessageBox::warning(this, "Low Stock Alert",
-                             "The following items are low in stock:\n\n" + lowStockItems.join("\n"));
+        QMessageBox::warning(this, "Low Stock Alert", "The following items are low in stock:\n\n" + lowStockItems.join("\n"));
     }
 }

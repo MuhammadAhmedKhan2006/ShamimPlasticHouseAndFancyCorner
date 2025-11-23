@@ -1,82 +1,149 @@
-#include "LoginDialog.h"
+#include "logindialog.h"
 
 LoginDialog::LoginDialog(QWidget *parent)
     : QDialog(parent)
 {
     setupUI();
     setWindowTitle("Login - Shamim Plastic House Management System");
-    setFixedSize(400, 500);
+    resize(600, 700);
     setModal(true);
 }
 
 void LoginDialog::setupUI()
 {
     QVBoxLayout *mainLayout = new QVBoxLayout(this);
-    mainLayout->setSpacing(20);
-    mainLayout->setContentsMargins(30, 30, 30, 30);
+    mainLayout->setSpacing(30);
+    mainLayout->setContentsMargins(50, 50, 50, 50);
 
-    // Logo and title
+    setStyleSheet(R"(
+        QDialog {
+            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #f5f7fa, stop: 1 #c3cfe2);
+        }
+    )");
+
+    // Logo
     QLabel *logoLabel = new QLabel;
     logoLabel->setPixmap(createLogoPixmap());
     logoLabel->setAlignment(Qt::AlignCenter);
-    logoLabel->setStyleSheet("background: transparent;");
 
+    // Title
     QLabel *titleLabel = new QLabel("Shop Management System");
     titleLabel->setAlignment(Qt::AlignCenter);
-    titleLabel->setStyleSheet(R"(
-        QLabel {
-            font-size: 18px;
-            font-weight: bold;
-            color: #3498db;
-            background: transparent;
-        }
-    )");
+    titleLabel->setStyleSheet("font-size: 26px; font-weight: bold; color: #3498db; padding: 10px;");
 
+    // Subtitle
     QLabel *subtitleLabel = new QLabel("Shamim Plastic House & Fancy Corner");
     subtitleLabel->setAlignment(Qt::AlignCenter);
-    subtitleLabel->setStyleSheet(R"(
-        QLabel {
-            font-size: 14px;
-            color: #7f8c8d;
-            background: transparent;
+    subtitleLabel->setStyleSheet("font-size: 16px; color: #7f8c8d; padding: 5px;");
+
+    // Manual Login Group
+    QGroupBox *manualLoginGroup = new QGroupBox("Manual Login");
+    manualLoginGroup->setStyleSheet(R"(
+        QGroupBox {
+            font-size: 18px;
+            font-weight: bold;
+            border: 3px solid #3498db;
+            border-radius: 12px;
+            margin-top: 20px;
+            padding: 25px;
+            background: white;
+        }
+        QGroupBox::title {
+            subcontrol-origin: margin;
+            left: 20px;
+            padding: 0 10px;
+            color: #2c3e50;
         }
     )");
 
-    // Manual login group
-    QGroupBox *manualLoginGroup = new QGroupBox("Manual Login");
-    QFormLayout *formLayout = new QFormLayout(manualLoginGroup);
+    QVBoxLayout *manualLoginLayout = new QVBoxLayout(manualLoginGroup);
+    manualLoginLayout->setSpacing(20);
+
+    // Username
+    QLabel *usernameLabel = new QLabel("Username:");
+    usernameLabel->setStyleSheet("font-size: 16px; font-weight: bold; color: #2c3e50;");
 
     m_usernameEdit = new QLineEdit;
     m_usernameEdit->setPlaceholderText("Enter username");
+    m_usernameEdit->setStyleSheet(R"(
+        QLineEdit {
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 16px;
+            background: white;
+            color: #2c3e50;
+            min-height: 25px;
+        }
+        QLineEdit:focus {
+            border: 3px solid #3498db;
+        }
+    )");
+
+    // Password
+    QLabel *passwordLabel = new QLabel("Password:");
+    passwordLabel->setStyleSheet("font-size: 16px; font-weight: bold; color: #2c3e50;");
+
     m_passwordEdit = new QLineEdit;
     m_passwordEdit->setPlaceholderText("Enter password");
     m_passwordEdit->setEchoMode(QLineEdit::Password);
+    m_passwordEdit->setStyleSheet(R"(
+        QLineEdit {
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 16px;
+            background: white;
+            color: #2c3e50;
+            min-height: 25px;
+        }
+        QLineEdit:focus {
+            border: 3px solid #3498db;
+        }
+    )");
 
-    formLayout->addRow("Username:", m_usernameEdit);
-    formLayout->addRow("Password:", m_passwordEdit);
+    manualLoginLayout->addWidget(usernameLabel);
+    manualLoginLayout->addWidget(m_usernameEdit);
+    manualLoginLayout->addWidget(passwordLabel);
+    manualLoginLayout->addWidget(m_passwordEdit);
+
+    // Login and Cancel Buttons
+    QHBoxLayout *buttonLayout = new QHBoxLayout;
+    buttonLayout->setSpacing(20);
 
     m_loginButton = new QPushButton("Login");
     m_loginButton->setDefault(true);
+    m_loginButton->setStyleSheet(R"(
+        QPushButton {
+            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #27ae60, stop: 1 #229954);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            min-height: 20px;
+        }
+        QPushButton:hover {
+            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #2ecc71, stop: 1 #27ae60);
+        }
+    )");
 
-    // Quick login group
-    QGroupBox *quickLoginGroup = new QGroupBox("Quick Login");
-    QVBoxLayout *quickLayout = new QVBoxLayout(quickLoginGroup);
-
-    m_quickLoginCombo = new QComboBox;
-    m_quickLoginCombo->addItem("Admin (admin/admin123)", "Admin");
-    m_quickLoginCombo->addItem("Salesman (salesman/sales123)", "Salesman");
-
-    m_quickLoginButton = new QPushButton("Quick Login");
-
-    quickLayout->addWidget(m_quickLoginCombo);
-    quickLayout->addWidget(m_quickLoginButton);
-
-    // Cancel button
     m_cancelButton = new QPushButton("Cancel");
     m_cancelButton->setStyleSheet(R"(
         QPushButton {
             background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
                                       stop: 0 #e74c3c, stop: 1 #c0392b);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            min-height: 20px;
         }
         QPushButton:hover {
             background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
@@ -84,12 +151,77 @@ void LoginDialog::setupUI()
         }
     )");
 
-    // Button layout
-    QHBoxLayout *buttonLayout = new QHBoxLayout;
     buttonLayout->addWidget(m_loginButton);
     buttonLayout->addWidget(m_cancelButton);
 
-    // Add to main layout
+    // Quick Login Group
+    QGroupBox *quickLoginGroup = new QGroupBox("Quick Login");
+    quickLoginGroup->setStyleSheet(R"(
+        QGroupBox {
+            font-size: 18px;
+            font-weight: bold;
+            border: 3px solid #3498db;
+            border-radius: 12px;
+            margin-top: 20px;
+            padding: 25px;
+            background: white;
+        }
+        QGroupBox::title {
+            subcontrol-origin: margin;
+            left: 20px;
+            padding: 0 10px;
+            color: #2c3e50;
+        }
+    )");
+
+    QVBoxLayout *quickLayout = new QVBoxLayout(quickLoginGroup);
+    quickLayout->setSpacing(15);
+
+    m_quickLoginCombo = new QComboBox;
+    m_quickLoginCombo->addItem("Admin (admin/admin123)", "Admin");
+    m_quickLoginCombo->addItem("Salesman (salesman/sales123)", "Salesman");
+    m_quickLoginCombo->setStyleSheet(R"(
+        QComboBox {
+            border: 2px solid #bdc3c7;
+            border-radius: 8px;
+            padding: 12px;
+            font-size: 16px;
+            background: white;
+            color: #2c3e50;
+            min-height: 25px;
+        }
+        QComboBox:hover {
+            border: 3px solid #3498db;
+        }
+        QComboBox::drop-down {
+            border: none;
+            width: 30px;
+        }
+    )");
+
+    m_quickLoginButton = new QPushButton("Quick Login");
+    m_quickLoginButton->setStyleSheet(R"(
+        QPushButton {
+            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #3498db, stop: 1 #2980b9);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 15px;
+            font-size: 18px;
+            font-weight: bold;
+            min-height: 20px;
+        }
+        QPushButton:hover {
+            background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
+                                      stop: 0 #2980b9, stop: 1 #21618c);
+        }
+    )");
+
+    quickLayout->addWidget(m_quickLoginCombo);
+    quickLayout->addWidget(m_quickLoginButton);
+
+    // Add all to main layout
     mainLayout->addWidget(logoLabel);
     mainLayout->addWidget(titleLabel);
     mainLayout->addWidget(subtitleLabel);
@@ -113,7 +245,6 @@ QPixmap LoginDialog::createLogoPixmap()
     QPainter painter(&logo);
     painter.setRenderHint(QPainter::Antialiasing);
 
-    // Draw circular background
     QLinearGradient gradient(0, 0, 120, 120);
     gradient.setColorAt(0, QColor(52, 152, 219));
     gradient.setColorAt(1, QColor(41, 128, 185));
@@ -122,11 +253,9 @@ QPixmap LoginDialog::createLogoPixmap()
     painter.setPen(Qt::NoPen);
     painter.drawEllipse(10, 10, 100, 100);
 
-    // Draw shop icon
     painter.setPen(QPen(Qt::white, 3));
     painter.setBrush(Qt::NoBrush);
 
-    // Simple shop/house icon
     QPolygon house;
     house << QPoint(60, 35) << QPoint(45, 50) << QPoint(75, 50);
     painter.drawPolygon(house);

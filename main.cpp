@@ -8,9 +8,9 @@
 #include <QFont>
 #include <QMessageBox>
 #include "DatabaseManager.h"
-#include "AdminPanel.h"
-#include "SalesmanPanel.h"
-#include "LoginDialog.h"
+#include "adminpanel.h"
+#include "salesmanpanel.h"
+#include "logindialog.h"
 
 QString createModernStylesheet() {
     return R"(
